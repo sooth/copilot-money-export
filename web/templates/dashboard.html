@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Dashboard</title>
+    <!-- Inter font for clean financial look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            color: #e5e7eb;
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: #111118;
+            border-bottom: 1px solid #1f1f2e;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .header-left .subtitle {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 0.125rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* Toggle */
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #374151;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: #2563eb;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Refresh button */
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            background: #1f1f2e;
+            border: 1px solid #2d2d3d;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .refresh-btn:hover {
+            background: #2d2d3d;
+            border-color: #3d3d4d;
+        }
+
+        .refresh-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .refresh-btn.loading svg {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Main content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Net Worth Section */
+        .networth-section {
+            background: #111118;
+            border: 1px solid #1f1f2e;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .networth-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+        }
+
+        .networth-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f3f4f6;
+            letter-spacing: -0.02em;
+        }
+
+        .networth-value.positive { color: #10b981; }
+        .networth-value.negative { color: #ef4444; }
+
+        .filtered-indicator {
+            display: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #60a5fa;
+            background: #1e3a5f;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 0.75rem;
+            vertical-align: middle;
+        }
+
+        .filtered-indicator.show {
+            display: inline;
+        }
+
+        /* Summary cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-card {
+            background: #111118;
+            border: 1px solid #1f1f2e;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .summary-card-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 0.375rem;
+        }
+
+        .summary-card-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .summary-card-value.green { color: #10b981; }
+        .summary-card-value.red { color: #ef4444; }
+
+        /* Breakdown section */
+        .breakdown-section {
+            background: #111118;
+            border: 1px solid #1f1f2e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .breakdown-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #1f1f2e;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .breakdown-table {
+            width: 100%;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #1a1a24;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .breakdown-row:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-row:hover {
+            background: #1a1a24;
+        }
+
+        .breakdown-row-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .breakdown-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .breakdown-icon.investments { background: #1e3a5f; color: #60a5fa; }
+        .breakdown-icon.bank { background: #064e3b; color: #34d399; }
+        .breakdown-icon.realestate { background: #78350f; color: #fbbf24; }
+        .breakdown-icon.debt { background: #7f1d1d; color: #f87171; }
+
+        .breakdown-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #d1d5db;
+        }
+
+        .breakdown-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .breakdown-value.green { color: #10b981; }
+        .breakdown-value.red { color: #ef4444; }
+
+        .breakdown-arrow {
+            color: #6b7280;
+            margin-left: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: #111118;
+            border: 1px solid #1f1f2e;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 80vh;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #1f1f2e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #9ca3af;
+        }
+
+        .modal-body {
+            padding: 0.5rem 0;
+            overflow-y: auto;
+            max-height: calc(80vh - 140px);
+        }
+
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem 1.5rem;
+            border-bottom: 1px solid #1a1a24;
+        }
+
+        .account-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #d1d5db;
+        }
+
+        .account-institution {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.125rem;
+        }
+
+        .account-balance {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .account-balance.debt {
+            color: #ef4444;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #1f1f2e;
+            display: flex;
+            justify-content: space-between;
+            background: #0d0d12;
+        }
+
+        .modal-footer-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #9ca3af;
+        }
+
+        .modal-footer-value {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #f3f4f6;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #111827;
+            color: #fff;
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 1001;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: #059669; }
+        .toast.error { background: #dc2626; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .summary-row {
+                grid-template-columns: 1fr;
+            }
+
+            .networth-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Financial Overview</h1>
+            <p class="subtitle">Last updated {{ extraction_date }}</p>
+        </div>
+        <div class="header-right">
+            {% if residence.asset or residence.mortgage %}
+            <div class="filter-toggle">
+                <span>Exclude primary residence</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="filterPrimary" onchange="togglePrimaryResidence()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            {% endif %}
+            <button class="refresh-btn" onclick="refreshData()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Net Worth -->
+        <div class="networth-section">
+            <div class="networth-label">Total Net Worth<span id="badge-networth" class="filtered-indicator">Filtered</span></div>
+            <div class="networth-value positive" id="val-networth">${{ "{:,.2f}".format(summary.net_worth) }}</div>
+        </div>
+
+        <!-- Assets and Debt Summary -->
+        <div class="summary-row">
+            <div class="summary-card">
+                <div class="summary-card-label">Total Assets<span id="badge-assets" class="filtered-indicator">Filtered</span></div>
+                <div class="summary-card-value green" id="val-assets">${{ "{:,.2f}".format(summary.total_assets) }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Total Debt<span id="badge-debt" class="filtered-indicator">Filtered</span></div>
+                <div class="summary-card-value red" id="val-debt">${{ "{:,.2f}".format(summary.total_debt) }}</div>
+            </div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="breakdown-section">
+            <div class="breakdown-header">Account Breakdown</div>
+            <div class="breakdown-table">
+                <div class="breakdown-row" onclick="showAccounts('investments')">
+                    <div class="breakdown-row-left">
+                        <div class="breakdown-icon investments">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                        <span class="breakdown-label">Investments</span>
+                    </div>
+                    <div>
+                        <span class="breakdown-value green">${{ "{:,.2f}".format(summary.total_investments) }}</span>
+                        <span class="breakdown-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-row" onclick="showAccounts('bank_accounts')">
+                    <div class="breakdown-row-left">
+                        <div class="breakdown-icon bank">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                        </div>
+                        <span class="breakdown-label">Bank Accounts</span>
+                    </div>
+                    <div>
+                        <span class="breakdown-value green">${{ "{:,.2f}".format(summary.total_bank_accounts) }}</span>
+                        <span class="breakdown-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-row" onclick="showAccounts('real_estate')">
+                    <div class="breakdown-row-left">
+                        <div class="breakdown-icon realestate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <span class="breakdown-label">Real Estate<span id="badge-realestate" class="filtered-indicator">Filtered</span></span>
+                    </div>
+                    <div>
+                        <span class="breakdown-value green" id="val-realestate">${{ "{:,.2f}".format(summary.total_real_estate) }}</span>
+                        <span class="breakdown-arrow">›</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-row" onclick="showAccounts('debts')">
+                    <div class="breakdown-row-left">
+                        <div class="breakdown-icon debt">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                        </div>
+                        <span class="breakdown-label">Liabilities<span id="badge-debts" class="filtered-indicator">Filtered</span></span>
+                    </div>
+                    <div>
+                        <span class="breakdown-value red" id="val-debts">${{ "{:,.2f}".format(summary.total_debt) }}</span>
+                        <span class="breakdown-arrow">›</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Accounts</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="account-list"></div>
+            <div class="modal-footer">
+                <span class="modal-footer-label">Total</span>
+                <span class="modal-footer-value" id="modal-total">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const accountData = {{ accounts | tojson | safe }};
+        const summaryData = {{ summary | tojson | safe }};
+
+        // Primary residence filter: account-name substrings from
+        // COPILOT2_RESIDENCE_ASSET / COPILOT2_RESIDENCE_MORTGAGE (toggle hidden when unset).
+        const RESIDENCE = {{ residence | tojson | safe }};
+        const nameHas = (acc, needle) => !!needle && !!acc.name && acc.name.toLowerCase().includes(needle.toLowerCase());
+        const sumMatching = (list, needle) => (list || []).filter(a => nameHas(a, needle)).reduce((t, a) => t + Math.abs(a.balance), 0);
+        const PRIMARY_RESIDENCE = {
+            assetValue: sumMatching(accountData.real_estate, RESIDENCE.asset),
+            assetMatch: (acc) => nameHas(acc, RESIDENCE.asset),
+            mortgageValue: sumMatching(accountData.debts, RESIDENCE.mortgage),
+            mortgageMatch: (acc) => nameHas(acc, RESIDENCE.mortgage)
+        };
+
+        let filterPrimaryResidence = localStorage.getItem('filterPrimaryResidence') === 'true';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const box = document.getElementById('filterPrimary');
+            if (!box) { filterPrimaryResidence = false; return; }
+            box.checked = filterPrimaryResidence;
+            if (filterPrimaryResidence) applyPrimaryResidenceFilter(true);
+        });
+
+        function togglePrimaryResidence() {
+            filterPrimaryResidence = document.getElementById('filterPrimary').checked;
+            localStorage.setItem('filterPrimaryResidence', filterPrimaryResidence);
+            applyPrimaryResidenceFilter(filterPrimaryResidence);
+        }
+
+        function applyPrimaryResidenceFilter(filtered) {
+            const assetDelta = PRIMARY_RESIDENCE.assetValue;
+            const debtDelta = PRIMARY_RESIDENCE.mortgageValue;
+
+            let newAssets = filtered ? summaryData.total_assets - assetDelta : summaryData.total_assets;
+            let newDebt = filtered ? summaryData.total_debt - debtDelta : summaryData.total_debt;
+            let newRealEstate = filtered ? summaryData.total_real_estate - assetDelta : summaryData.total_real_estate;
+            let newNetWorth = newAssets - newDebt;
+
+            document.getElementById('val-networth').textContent = formatCurrency(newNetWorth);
+            document.getElementById('val-assets').textContent = formatCurrency(newAssets);
+            document.getElementById('val-debt').textContent = formatCurrency(newDebt);
+            document.getElementById('val-realestate').textContent = formatCurrency(newRealEstate);
+            document.getElementById('val-debts').textContent = formatCurrency(newDebt);
+
+            ['badge-networth', 'badge-assets', 'badge-debt', 'badge-realestate', 'badge-debts'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('show', filtered);
+            });
+        }
+
+        const titles = {
+            'investments': 'Investments',
+            'bank_accounts': 'Bank Accounts',
+            'real_estate': 'Real Estate',
+            'other_assets': 'Other Assets',
+            'debts': 'Liabilities'
+        };
+
+        function formatCurrency(amount) {
+            return '$' + Math.abs(amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function showAccounts(category) {
+            let accounts = accountData[category] || [];
+            const isDebt = category === 'debts';
+
+            if (filterPrimaryResidence) {
+                if (category === 'real_estate') {
+                    accounts = accounts.filter(acc => !PRIMARY_RESIDENCE.assetMatch(acc));
+                } else if (category === 'debts') {
+                    accounts = accounts.filter(acc => !PRIMARY_RESIDENCE.mortgageMatch(acc));
+                }
+            }
+
+            const sorted = [...accounts].sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
+
+            document.getElementById('modal-title').textContent = titles[category] || category;
+
+            let html = '';
+            let total = 0;
+
+            sorted.forEach(account => {
+                const balance = Math.abs(account.balance);
+                total += balance;
+                html += `
+                    <div class="account-item">
+                        <div>
+                            <div class="account-name">${account.name}</div>
+                            ${account.institution ? `<div class="account-institution">${account.institution}</div>` : ''}
+                        </div>
+                        <div class="account-balance ${isDebt ? 'debt' : ''}">${formatCurrency(balance)}</div>
+                    </div>
+                `;
+            });
+
+            if (sorted.length === 0) {
+                html = '<div class="account-item"><div class="account-name" style="color:#9ca3af">No accounts</div></div>';
+            }
+
+            document.getElementById('account-list').innerHTML = html;
+            document.getElementById('modal-total').textContent = formatCurrency(total);
+            document.getElementById('modal-total').style.color = isDebt ? '#ef4444' : '#f3f4f6';
+
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+
+        async function refreshData() {
+            const btn = document.querySelector('.refresh-btn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/refresh');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showToast('Data refreshed successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to refresh data', 'error');
+            }
+
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>

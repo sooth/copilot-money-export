@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Financial Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f1a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .error-box {
+            text-align: center;
+            padding: 3rem;
+            background: #252540;
+            border-radius: 20px;
+            max-width: 500px;
+        }
+        .error-icon { font-size: 4rem; margin-bottom: 1rem; }
+        h1 { margin-bottom: 1rem; color: #ff6b6b; }
+        p { color: #a0a0b0; line-height: 1.6; }
+        code {
+            display: block;
+            background: #1a1a2e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #4dabf7;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <div class="error-icon">⚠️</div>
+        <h1>No Data Found</h1>
+        <p>{{ message }}</p>
+        <code>uv run python fast_financial_extractor.py</code>
+    </div>
+</body>
+</html>

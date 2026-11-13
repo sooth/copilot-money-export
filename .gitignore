@@ -1,0 +1,28 @@
+# Python / build
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+.pytest_cache/
+.ruff_cache/
+# Cython build output (rebuild with: uv run python setup.py build_ext --inplace)
+cython_utils.c
+*.so
+
+# Personal financial data: never commit
+*.json
+*.csv
+*.txt
+*.sh
+archive/
+
+# Local agent / tooling state
+CLAUDE.md
+.claude/
+.tldr/
+.tldrignore
+.scratch/
+.git-private-backup/

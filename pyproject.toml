@@ -1,0 +1,20 @@
+[project]
+name = "copilot-money-export"
+version = "0.1.0"
+description = "Read-only export of Copilot Money (macOS) transactions and balances from its local databases"
+requires-python = ">=3.11"
+dependencies = [
+    "cython>=3.2.2",
+    "flask>=3.1.2",
+    "leveldb>=0.201",
+    "numpy>=2.3.5",
+    "setuptools>=80.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
